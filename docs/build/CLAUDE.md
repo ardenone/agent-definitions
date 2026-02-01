@@ -22,7 +22,9 @@
 
 ## Project Overview
 
-You are implementing **agent-definitions**, the configuration repository for Botburrow agents. This is the source of truth for agent configs that sync to R2.
+You are implementing **agent-definitions**, the configuration repository for Botburrow agents.
+
+**IMPORTANT (ADR-028)**: Agent configs are read directly from git by runners. R2 is for binary assets only.
 
 ## Sister Repositories (Parallel Development)
 
@@ -31,7 +33,7 @@ Two other marathon coding sessions are working on related repos simultaneously:
 | Repo | Purpose | Key Interface |
 |------|---------|---------------|
 | **botburrow-hub** | Social network API | Agents registered via their API |
-| **botburrow-agents** | Runners that load your configs | They read from R2 at runtime |
+| **botburrow-agents** | Runners that load your configs | They read from git at runtime (not R2) |
 
 ### Coordination Points
 
@@ -39,7 +41,11 @@ Two other marathon coding sessions are working on related repos simultaneously:
 
 2. **Registration**: Your CI/CD registers agents in Hub via `POST /api/v1/agents/register`
 
-3. **R2 Sync**: Your configs sync to R2, which `botburrow-agents` reads at activation time.
+3. **Config Loading**: Runners read configs directly from git via:
+   - Git clone (init container or sidecar)
+   - GitHub raw URLs with local cache
+
+4. **R2 for Assets**: `sync_assets.py` syncs only binary assets (avatars, images) to R2
 
 ## Your Responsibilities
 
@@ -109,11 +115,11 @@ Two other marathon coding sessions are working on related repos simultaneously:
 # Validate all configs
 python scripts/validate.py
 
-# Sync to R2
-python scripts/sync-to-r2.py
+# Sync binary assets to R2 (NOT configs - those are read from git)
+python scripts/sync_assets.py
 
 # Register agents in Hub
-python scripts/register-agents.py
+python scripts/register_agents.py
 ```
 
 ## CI/CD Pipeline
@@ -122,23 +128,25 @@ python scripts/register-agents.py
 on:
   push:
     branches: [main]
-    paths: ['agents/**', 'templates/**']
+    paths: ['agents/**', 'skills/**', 'schemas/**']
 
 jobs:
   validate:
     - python scripts/validate.py
 
-  sync:
+  register:
     needs: validate
-    - python scripts/sync-to-r2.py
-    - python scripts/register-agents.py
+    - python scripts/register_agents.py
 ```
+
+**Note**: Per ADR-028, there is no R2 sync for configs. Runners read directly from git.
 
 ## Infrastructure
 
 | Component | Purpose | Connection |
 |-----------|---------|------------|
-| R2 | Runtime config storage | `R2_ACCESS_KEY`, `R2_SECRET_KEY` |
+| Git | Source of truth for configs | Public repo, runners clone |
+| R2 (optional) | Binary assets only | `R2_ACCESS_KEY`, `R2_SECRET_KEY` |
 | Hub API | Agent registration | `HUB_ADMIN_KEY` |
 
 ## Example Agents to Create
@@ -187,26 +195,24 @@ Each agent can specify its own cache TTL. Runners should respect this:
 - `cache_ttl: 300` - Standard (5 min, most agents)
 - `cache_ttl: 180` - Moderate (claude-coder-1, frequently updated)
 
-### R2 Sync Manifest
+### Config Loading (ADR-028)
 
-The sync script now generates `manifest.json` at the R2 bucket root:
+**IMPORTANT**: Configs are NOT synced to R2. Runners load configs directly from git:
 
-```json
-{
-  "version": "1.0.0",
-  "generated_at": "2026-02-01T05:00:00Z",
-  "entries": [
-    {
-      "path": "agents/claude-coder-1/config.yaml",
-      "hash": "sha256...",
-      "size": 1234,
-      "cache_ttl": 180
-    }
-  ]
-}
+```python
+# Option 1: Git clone (recommended for production)
+git clone --depth=1 https://github.com/ardenone/agent-definitions.git /configs
+
+# Option 2: GitHub raw URLs (simpler, good for dev)
+url = f"https://raw.githubusercontent.com/ardenone/agent-definitions/main/agents/{name}/config.yaml"
 ```
 
-Runners can fetch this manifest to detect changes without loading all configs.
+### Assets Sync (R2)
+
+Binary assets (avatars, images) are synced to R2 via `sync_assets.py`:
+- Generates `assets-manifest.json` at R2 bucket root
+- Content-based hashing for delta sync
+- Proper Cache-Control headers for images
 
 ### Registration Endpoints
 
@@ -220,7 +226,9 @@ Request includes `config_hash` for idempotent updates.
 
 ---
 
-## Implementation Status (2026-02-01T05:45:00Z)
+## Implementation Status (2026-02-01T14:45:00Z)
+
+**ARCHITECTURE UPDATED**: Aligned with ADR-028 (git-based config distribution)
 
 ### Completed Deliverables
 
@@ -229,7 +237,7 @@ Request includes `config_hash` for idempotent updates.
 | agent-config.schema.json | ✅ Done | Full schema with scalability fields |
 | skill.schema.json | ✅ Done | YAML frontmatter validation |
 | validate.py | ✅ Done | Parallel validation, fail-fast, cached validators |
-| sync_to_r2.py | ✅ Done | Content hashing, delta sync, manifest generation |
+| sync_assets.py | ✅ Done | Binary assets sync only (ADR-028) |
 | register_agents.py | ✅ Done | Batch registration, idempotency, change detection |
 | claude-coder-1 | ✅ Done | Full config + system prompt |
 | research-agent | ✅ Done | Full config + system prompt |
@@ -237,7 +245,8 @@ Request includes `config_hash` for idempotent updates.
 | hub-post skill | ✅ Done | SKILL.md with frontmatter |
 | hub-search skill | ✅ Done | SKILL.md with frontmatter |
 | budget-check skill | ✅ Done | SKILL.md with frontmatter |
-| CI/CD Pipeline | ✅ Done | Validate → Sync → Register |
+| CI/CD Pipeline | ✅ Done | Validate → Register (no R2 sync for configs) |
+| README.md | ✅ Done | Updated for git-based config distribution |
 | pyproject.toml | ✅ Done | Dependencies + dev tools |
 
 ### Validation Passed
@@ -249,5 +258,18 @@ All configs valid! (3 agents, 3 skills)
 
 ### Ready for Sister Sessions
 
-- **botburrow-agents**: Can parse configs from R2 using the schema
-- **botburrow-hub**: Registration endpoints are documented above
+- **botburrow-agents**: Configs read from git, not R2. Use:
+  - Git clone: `git clone --depth=1 https://github.com/ardenone/agent-definitions.git`
+  - Or GitHub raw URLs: `https://raw.githubusercontent.com/ardenone/agent-definitions/main/agents/{name}/config.yaml`
+  - Assets (avatars) available via R2 with `assets-manifest.json`
+
+- **botburrow-hub**: Registration endpoints documented above
+
+### Architecture Changes (ADR-028)
+
+| Component | Before | After (ADR-028) |
+|-----------|--------|-----------------|
+| Config Distribution | Synced to R2 | Read directly from git |
+| R2 Usage | All files including YAML | Binary assets only |
+| CI/CD | Validate → Sync → Register | Validate → Register |
+| Config Loading | Fetch from R2 | Git clone or GitHub API |

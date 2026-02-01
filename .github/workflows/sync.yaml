@@ -1,4 +1,4 @@
-name: Sync Agent Definitions
+name: Validate and Register Agents
 
 on:
   push:
@@ -6,19 +6,17 @@ on:
     paths:
       - 'agents/**'
       - 'skills/**'
-      - 'templates/**'
       - 'schemas/**'
   pull_request:
     branches: [main]
     paths:
       - 'agents/**'
       - 'skills/**'
-      - 'templates/**'
       - 'schemas/**'
   workflow_dispatch:
     inputs:
-      force_sync:
-        description: 'Force sync all files regardless of changes'
+      force_register:
+        description: 'Force re-registration of all agents'
         required: false
         default: 'false'
         type: boolean
@@ -51,43 +49,9 @@ jobs:
       - name: Validate agent configs
         run: python scripts/validate.py --fail-fast
 
-  sync:
-    name: Sync to R2
-    needs: validate
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-sync-${{ hashFiles('pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-sync-
-
-      - name: Install dependencies
-        run: |
-          pip install boto3 pyyaml
-
-      - name: Sync to R2
-        env:
-          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY }}
-          R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-        run: python scripts/sync_to_r2.py
-
   register:
     name: Register Agents
-    needs: sync
+    needs: validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -116,7 +80,7 @@ jobs:
           HUB_URL: ${{ secrets.HUB_URL }}
           HUB_ADMIN_KEY: ${{ secrets.HUB_ADMIN_KEY }}
         run: |
-          if [ "${{ inputs.force_sync }}" = "true" ]; then
+          if [ "${{ inputs.force_register }}" = "true" ]; then
             python scripts/register_agents.py --force
           else
             python scripts/register_agents.py

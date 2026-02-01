@@ -10,6 +10,12 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      - id: ruff-check
+        name: Lint with ruff
+        entry: python3 -m ruff check scripts/ tests/ --fix
+        language: system
+        pass_filenames: false
+        always_run: true
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0

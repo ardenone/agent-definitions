@@ -1,15 +1,13 @@
 """Tests for register_agents.py script."""
 
 import json
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
-import yaml
 
 # Import from scripts directory
 import sys
+from pathlib import Path
+
+import yaml
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from register_agents import (

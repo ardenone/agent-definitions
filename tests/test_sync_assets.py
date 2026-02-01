@@ -5,14 +5,14 @@ Agent configs are read directly from git by runners.
 """
 
 import hashlib
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
 
 # Import from scripts directory
 import sys
+from pathlib import Path
+from unittest.mock import MagicMock
+
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from sync_assets import (

@@ -94,16 +94,16 @@ def validate_agent(agent_dir: Path, schema_path: Path) -> list[ValidationError]:
     # Validate against schema
     validator = get_validator(schema_path)
     for error in validator.iter_errors(config):
-        errors.append(ValidationError(config_path, f"{agent_dir.name}/config.yaml: {error.message}"))
+        msg = f"{agent_dir.name}/config.yaml: {error.message}"
+        errors.append(ValidationError(config_path, msg))
 
     # Check name matches directory name
     if config.get("name") != agent_dir.name:
-        errors.append(
-            ValidationError(
-                config_path,
-                f"{agent_dir.name}: config name '{config.get('name')}' must match directory name '{agent_dir.name}'",
-            )
+        msg = (
+            f"{agent_dir.name}: config name '{config.get('name')}' "
+            f"must match directory name '{agent_dir.name}'"
         )
+        errors.append(ValidationError(config_path, msg))
 
     # Check for system prompt
     prompt_path = agent_dir / "system-prompt.md"

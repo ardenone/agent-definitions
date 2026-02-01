@@ -1,18 +1,15 @@
 """Tests for validate.py script."""
 
-import json
-import tempfile
+# Import from scripts directory
+import sys
 from pathlib import Path
 
 import pytest
 import yaml
 
-# Import from scripts directory
-import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from validate import (
-    ValidationError,
     extract_yaml_frontmatter,
     get_validator,
     validate_agent,
@@ -208,7 +205,9 @@ This is a test skill.
 
 
 class TestValidateAll:
-    def test_validates_all_agents_and_skills(self, temp_repo, valid_agent_config, valid_skill_frontmatter):
+    def test_validates_all_agents_and_skills(
+        self, temp_repo, valid_agent_config, valid_skill_frontmatter
+    ):
         # Create valid agent
         agent_dir = temp_repo / "agents" / "test-agent"
         agent_dir.mkdir()

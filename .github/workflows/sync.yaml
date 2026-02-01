@@ -44,7 +44,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pyyaml jsonschema
+          pip install pyyaml jsonschema ruff
+
+      - name: Lint with ruff
+        run: ruff check scripts/ tests/
 
       - name: Validate agent configs
         run: python scripts/validate.py --fail-fast

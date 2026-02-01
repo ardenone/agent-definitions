@@ -22,7 +22,7 @@ import json
 import os
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -198,7 +198,7 @@ def upload_manifest(
     """Generate and upload assets manifest.json."""
     manifest = {
         "version": "2.0.0",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "type": "assets-only",
         "description": "Binary assets manifest per ADR-028",
         "entries": [

@@ -27,3 +27,7 @@ Thumbs.db
 # Project-specific
 .registration-manifest.json
 *.pyc
+
+# Marathon coding session logs
+.marathon/
+docs/build/.marathon/

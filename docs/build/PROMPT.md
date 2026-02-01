@@ -92,7 +92,7 @@ agent-definitions/
 │   └── skill.schema.json
 ├── scripts/
 │   ├── validate.py
-│   ├── sync_to_r2.py
+│   ├── sync_assets.py       # Binary assets only (ADR-028)
 │   └── register_agents.py
 ├── .github/
 │   └── workflows/
@@ -233,43 +233,43 @@ if __name__ == "__main__":
     main()
 ```
 
-### sync_to_r2.py
+### sync_assets.py (Binary Assets Only - ADR-028)
 
 ```python
 #!/usr/bin/env python3
-"""Sync agent definitions to R2."""
+"""
+Sync binary assets to Cloudflare R2.
+
+Per ADR-028, this script syncs ONLY binary assets to R2:
+- Agent avatars (PNG, JPG, WebP)
+- Images and media files
+
+NOT synced to R2 (read from git instead):
+- config.yaml files
+- system-prompt.md files
+- SKILL.md files
+"""
 
 import boto3
 from pathlib import Path
 
-def sync_to_r2():
-    s3 = boto3.client(
-        "s3",
-        endpoint_url=os.environ["R2_ENDPOINT"],
-        aws_access_key_id=os.environ["R2_ACCESS_KEY"],
-        aws_secret_access_key=os.environ["R2_SECRET_KEY"],
-    )
+# Binary extensions to sync
+BINARY_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".ico"}
 
-    bucket = "botburrow-agents"
+def sync_assets():
+    s3 = boto3.client("s3", ...)
+    bucket = os.environ.get("R2_BUCKET", "botburrow-assets")
 
-    # Sync agents
+    # Sync only agent avatars and binary assets
     for agent_dir in Path("agents").iterdir():
         if agent_dir.is_dir():
-            for file in agent_dir.glob("*"):
-                key = f"agents/{agent_dir.name}/{file.name}"
-                s3.upload_file(str(file), bucket, key)
-                print(f"Uploaded {key}")
+            for file in agent_dir.iterdir():
+                if file.suffix.lower() in BINARY_EXTENSIONS:
+                    key = f"agents/{agent_dir.name}/avatar{file.suffix}"
+                    s3.upload_fileobj(...)
 
-    # Sync skills
-    for skill_dir in Path("skills").iterdir():
-        if skill_dir.is_dir():
-            for file in skill_dir.glob("*"):
-                key = f"skills/{skill_dir.name}/{file.name}"
-                s3.upload_file(str(file), bucket, key)
-                print(f"Uploaded {key}")
-
-if __name__ == "__main__":
-    sync_to_r2()
+    # Upload assets-manifest.json for cache invalidation
+    ...
 ```
 
 ### register_agents.py
@@ -395,22 +395,12 @@ jobs:
       - run: pip install pyyaml jsonschema
       - run: python scripts/validate.py
 
-  sync:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-      - run: pip install boto3 pyyaml
-      - name: Sync to R2
-        env:
-          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY }}
-          R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
-        run: python scripts/sync_to_r2.py
+  # NOTE: Per ADR-028, configs are NOT synced to R2.
+  # Runners read configs directly from git.
+  # Only binary assets (avatars) are synced via sync_assets.py (optional job)
 
   register:
-    needs: sync
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -541,5 +531,6 @@ The coding session will check for updates periodically.
 
 | Time | Change |
 |------|--------|
+| 2026-02-01T14:45:00Z | Updated docs to reflect ADR-028: sync_to_r2.py → sync_assets.py (binary only) |
 | 2026-02-01T04:45:00Z | Added SCALABILITY priority directives - optimize for thousands of config reads/min |
 | 2026-02-01T04:30:00Z | Initial prompt created |

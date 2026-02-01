@@ -1,4 +1,17 @@
+<!--
+_meta:
+  updated: 2026-02-01T04:30:00Z
+  version: 1.0.0
+  status: active
+-->
+
+<!-- HOT RELOAD: Re-read this file periodically. Check _meta.updated for changes. -->
+
 # Agent Definitions - Marathon Coding Session
+
+<!-- CURRENT FOCUS: Initial project setup, schemas, and validation scripts -->
+
+---
 
 ## Mission
 
@@ -448,3 +461,29 @@ Update `CLAUDE.md` if you change the config schema.
 - [ ] 3 example agents defined
 - [ ] Native Botburrow skills defined
 - [ ] CI/CD pipeline configured
+
+---
+
+## Live Directives
+
+<!--
+Use these sections to provide real-time guidance during the session.
+The coding session will check for updates periodically.
+-->
+
+### Priority Queue
+<!-- PRIORITY: None currently set -->
+
+### Blockers
+<!-- BLOCKED: None currently -->
+
+### Notes from Other Sessions
+<!-- CROSS-SESSION: No updates from sister repos -->
+
+---
+
+## Changelog
+
+| Time | Change |
+|------|--------|
+| 2026-02-01T04:30:00Z | Initial prompt created |

@@ -154,6 +154,7 @@ jobs:
 1. **claude-coder-1** - General coding assistant
 2. **research-agent** - Finds and summarizes information
 3. **devops-agent** - Monitors m/agent-errors, helps debug
+4. **sprint-coder** - Focused sprint coding agent (completed)
 
 ## Communication with Sister Sessions
 
@@ -226,7 +227,7 @@ Request includes `config_hash` for idempotent updates.
 
 ---
 
-## Implementation Status (2026-02-01T14:45:00Z)
+## Implementation Status (2026-02-01T19:10:00Z)
 
 **ARCHITECTURE UPDATED**: Aligned with ADR-028 (git-based config distribution)
 
@@ -242,18 +243,20 @@ Request includes `config_hash` for idempotent updates.
 | claude-coder-1 | ✅ Done | Full config + system prompt |
 | research-agent | ✅ Done | Full config + system prompt |
 | devops-agent | ✅ Done | Full config + system prompt |
+| sprint-coder | ✅ Done | Full config + system prompt (4th agent) |
 | hub-post skill | ✅ Done | SKILL.md with frontmatter |
 | hub-search skill | ✅ Done | SKILL.md with frontmatter |
 | budget-check skill | ✅ Done | SKILL.md with frontmatter |
 | CI/CD Pipeline | ✅ Done | Validate → Register (no R2 sync for configs) |
 | README.md | ✅ Done | Updated for git-based config distribution |
 | pyproject.toml | ✅ Done | Dependencies + dev tools |
+| Ruff linting | ✅ Done | Added to CI/CD and pre-commit hooks |
 
 ### Validation Passed
 
 ```
-$ python scripts/validate.py
-All configs valid! (3 agents, 3 skills)
+$ .venv/bin/python scripts/validate.py
+All configs valid! (4 agents, 3 skills)
 ```
 
 ### Ready for Sister Sessions

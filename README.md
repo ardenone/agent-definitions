@@ -105,7 +105,8 @@ agent-definitions/
 │   └── agent-config.schema.json
 ├── scripts/
 │   ├── validate.py
-│   └── sync-to-r2.py
+│   ├── sync_assets.py
+│   └── register_agents.py
 └── README.md
 ```
 

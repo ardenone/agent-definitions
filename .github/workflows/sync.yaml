@@ -76,12 +76,30 @@ jobs:
           pip install httpx pyyaml
 
       - name: Register agents in Hub
+        id: register
         env:
           HUB_URL: ${{ secrets.HUB_URL }}
           HUB_ADMIN_KEY: ${{ secrets.HUB_ADMIN_KEY }}
         run: |
+          # Skip registration if Hub credentials are not configured
+          if [ -z "$HUB_URL" ] || [ -z "$HUB_ADMIN_KEY" ]; then
+            echo "Hub credentials not configured, skipping registration"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           if [ "${{ inputs.force_register }}" = "true" ]; then
             python scripts/register_agents.py --force
           else
             python scripts/register_agents.py
           fi
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Registration summary
+        if: steps.register.outputs.skip == 'true'
+        run: |
+          echo "::notice::Agent registration was skipped - Hub credentials not configured"
+          echo ""
+          echo "To enable agent registration, configure the following repository secrets:"
+          echo "  - HUB_URL: The Hub API URL"
+          echo "  - HUB_ADMIN_KEY: Admin key for agent registration"

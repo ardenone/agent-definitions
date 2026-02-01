@@ -14,11 +14,37 @@ Agent definitions specify a `type` field that determines which coding orchestrat
 
 ## Decision
 
-**Support any coding orchestration that provides a headless CLI mode. The `type` field maps to an executor implementation in botburrow-agents.**
+**Support two orchestration modes:**
 
-## Criteria for Supported Orchestrations
+1. **CLI-based** - External tools with headless CLI (Claude Code, Aider, Goose)
+2. **Native** - Internal agentic loop using direct LLM API calls (OpenClaw-style)
 
-An orchestration can be added if it:
+The `type` field maps to an executor implementation in botburrow-agents.
+
+## Orchestration Categories
+
+### Native Type (Direct API)
+
+The `native` type implements an internal OpenClaw-style agentic loop:
+
+- **No external CLI dependency** - Lighter containers, faster startup
+- **Direct LLM API calls** - Works with any OpenAI-compatible endpoint
+- **Useful for free API sprints** - Spin up many agents when providers offer free credits
+- **Model-agnostic** - Easily switch between providers/models
+
+```yaml
+# Example: Agent using native type with free API
+name: sprint-coder
+type: native
+brain:
+  model: gpt-4o-mini
+  api_base: https://api.openai.com/v1  # Or any compatible endpoint
+  temperature: 0.7
+```
+
+### CLI-based Types
+
+CLI-based orchestrations require an external tool and must:
 
 1. **Has a headless CLI** - Can be invoked without GUI/IDE
 2. **Accepts prompt input** - Via stdin, argument, or file
@@ -30,6 +56,7 @@ An orchestration can be added if it:
 
 | Type | Tool | CLI Command | Status |
 |------|------|-------------|--------|
+| `native` | Internal loop | Direct API calls | ✅ Supported |
 | `claude-code` | Claude Code | `claude -p "prompt" --print` | ✅ Supported |
 | `goose` | Goose (Block) | `goose run --prompt "..."` | ✅ Supported |
 | `aider` | Aider | `aider --message "..." --yes` | ✅ Supported |
@@ -63,6 +90,7 @@ An orchestration can be added if it:
   "type": {
     "type": "string",
     "enum": [
+      "native",
       "claude-code",
       "goose",
       "aider",
@@ -70,10 +98,24 @@ An orchestration can be added if it:
       "mentat",
       "custom"
     ],
-    "description": "Coding orchestration CLI to use"
+    "description": "Orchestration type: 'native' for direct API, others for CLI tools"
   }
 }
 ```
+
+### Native Type Configuration
+
+```yaml
+type: native
+brain:
+  model: gpt-4o-mini           # Model identifier
+  api_base: https://api.openai.com/v1  # OpenAI-compatible endpoint
+  api_key_env: OPENAI_API_KEY  # Environment variable for API key
+  temperature: 0.7
+  max_tokens: 4096
+```
+
+### Custom Type Configuration
 
 The `custom` type allows specifying a custom command:
 
@@ -113,6 +155,57 @@ class Executor(ABC):
     def is_available(self) -> bool:
         """Check if this executor is available (CLI installed)."""
         pass
+```
+
+```python
+# botburrow-agents/executors/native.py
+class NativeExecutor(Executor):
+    """
+    OpenClaw-style agentic loop using direct LLM API calls.
+
+    Advantages:
+    - No external CLI dependency (lighter containers)
+    - Works with any OpenAI-compatible API
+    - Perfect for free API sprints or new model testing
+    """
+
+    async def run(self, prompt: str, **kwargs) -> ExecutorResult:
+        api_base = kwargs.get("api_base", "https://api.anthropic.com/v1")
+        api_key = os.environ.get(kwargs.get("api_key_env", "ANTHROPIC_API_KEY"))
+        model = kwargs.get("model", "claude-sonnet-4-20250514")
+
+        # Core tools (OpenClaw minimal set)
+        tools = [
+            {"name": "read", "description": "Read file contents"},
+            {"name": "write", "description": "Write/create files"},
+            {"name": "edit", "description": "Modify existing files"},
+            {"name": "bash", "description": "Execute shell commands"},
+        ]
+
+        context = []
+        iterations = 0
+        max_iterations = kwargs.get("max_iterations", 10)
+
+        while iterations < max_iterations:
+            response = await self.llm_call(api_base, api_key, model, prompt, context, tools)
+
+            if response.has_tool_calls:
+                for tool_call in response.tool_calls:
+                    result = await self.execute_tool(tool_call, kwargs["working_dir"])
+                    context.append({"role": "tool", "content": result})
+            else:
+                return ExecutorResult(
+                    exit_code=0,
+                    output=response.content,
+                    error="",
+                )
+            iterations += 1
+
+        return ExecutorResult(exit_code=1, output="", error="Max iterations exceeded")
+
+    def is_available(self) -> bool:
+        # Native executor is always available (no external CLI)
+        return True
 ```
 
 ```python
@@ -203,13 +296,38 @@ images:
 - Flexible orchestration choice per agent
 - Easy to add new orchestrations
 - Agents can use best tool for their purpose
+- **Native type enables free API sprints** - Spin up many agents without CLI overhead
+- **Model-agnostic native executor** - Test new models instantly
 
 ### Negative
 - Must maintain multiple executor implementations
-- Container size grows with each CLI
+- Container size grows with each CLI (not native)
 - Different CLIs have different output formats
 
 ### Mitigations
 - Normalize output in executor layer
 - Use multi-image strategy to keep containers small
+- **Native type has minimal dependencies** - Use for rapid scaling
 - Automated testing for each executor
+
+## Use Case: Free API Sprint
+
+When a provider offers free credits or rate limits are lifted:
+
+```yaml
+# Quick agent config for free sprint
+name: sprint-agent-001
+type: native
+brain:
+  model: gemini-2.0-flash
+  api_base: https://generativelanguage.googleapis.com/v1beta/openai
+  api_key_env: GOOGLE_API_KEY
+  temperature: 0.7
+behavior:
+  max_iterations: 20  # Higher limit for complex tasks
+```
+
+Benefits:
+- **No CLI installation needed** - Containers start instantly
+- **Easy to clone** - Just change name and scale horizontally
+- **Provider-agnostic** - Switch API endpoints without rebuilding

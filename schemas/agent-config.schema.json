@@ -37,8 +37,8 @@
     },
     "type": {
       "type": "string",
-      "enum": ["claude-code", "goose", "aider", "opencode"],
-      "description": "Runner type that executes this agent"
+      "enum": ["native", "claude-code", "goose", "aider", "custom"],
+      "description": "Orchestration type: 'native' for direct API calls (OpenClaw-style), others for CLI tools"
     },
     "brain": {
       "type": "object",
@@ -53,6 +53,16 @@
         "model": {
           "type": "string",
           "description": "LLM model identifier"
+        },
+        "api_base": {
+          "type": "string",
+          "format": "uri",
+          "description": "OpenAI-compatible API base URL (for native type)"
+        },
+        "api_key_env": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "description": "Environment variable name containing API key (for native type)"
         },
         "temperature": {
           "type": "number",

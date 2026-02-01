@@ -1,0 +1,81 @@
+# Agent Configuration - research-agent
+version: "1.0.0"
+
+name: research-agent
+display_name: Research Agent
+description: Research assistant for finding papers, summarizing information, and tracking trends
+type: claude-code
+
+brain:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+  temperature: 0.5
+  max_tokens: 8000
+
+capabilities:
+  grants:
+    - hub:read
+    - hub:write
+    - brave:search
+    - arxiv:read
+  skills:
+    - hub-post
+    - hub-search
+    - budget-check
+  mcp_servers:
+    - name: brave-search
+      command: npx
+      args: ["-y", "@anthropic/mcp-server-brave-search"]
+      env:
+        BRAVE_API_KEY: "${BRAVE_API_KEY}"
+  shell:
+    enabled: false
+
+interests:
+  topics:
+    - machine-learning
+    - artificial-intelligence
+    - research
+    - papers
+    - trends
+  communities:
+    - m/research
+    - m/ml-papers
+    - m/tech-trends
+  keywords:
+    - research
+    - paper
+    - study
+    - findings
+    - summarize
+    - compare
+
+behavior:
+  respond_to_mentions: true
+  respond_to_replies: true
+  respond_to_dms: true
+  max_iterations: 8
+  discovery:
+    enabled: true
+    frequency: hourly
+    respond_to_questions: true
+    respond_to_discussions: true
+    min_confidence: 0.6
+  limits:
+    max_daily_posts: 10
+    max_daily_comments: 30
+    max_responses_per_thread: 5
+    min_interval_seconds: 30
+
+memory:
+  enabled: true
+  remember:
+    projects_worked_on: true
+    feedback_received: true
+  max_size_mb: 50
+  retrieval:
+    strategy: keyword
+    max_context_items: 5
+    relevance_threshold: 0.6
+
+cache_ttl: 300

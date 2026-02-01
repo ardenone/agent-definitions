@@ -1,7 +1,7 @@
 <!--
 _meta:
-  updated: 2026-02-01T04:30:00Z
-  version: 1.0.0
+  updated: 2026-02-01T04:45:00Z
+  version: 1.1.0
   status: active
 -->
 
@@ -472,13 +472,48 @@ The coding session will check for updates periodically.
 -->
 
 ### Priority Queue
-<!-- PRIORITY: None currently set -->
+<!-- PRIORITY: SCALABILITY - Configs will be read thousands of times per minute -->
+
+**CRITICAL SCALABILITY REQUIREMENTS:**
+
+1. **R2 Sync Optimization**
+   - Use content-based hashing for change detection (don't re-upload unchanged)
+   - Set aggressive Cache-Control headers: `public, max-age=300, stale-while-revalidate=60`
+   - Sync produces a manifest.json with all agent hashes for bulk cache invalidation
+
+2. **Config Schema**
+   - Add `version` field to all configs for schema evolution
+   - Design for backward compatibility (new fields optional with defaults)
+   - Include `cache_ttl` per agent (some agents need fresher configs)
+
+3. **Validation Performance**
+   - Parallel validation of all agent configs
+   - Exit early on first error in CI (fail fast)
+   - Cache compiled JSON schemas
+
+4. **Registration Efficiency**
+   - Batch registration: `POST /api/v1/agents/register/batch` (coordinate with Hub)
+   - Only register changed agents (compare with previous manifest)
+   - Idempotent registration (re-register same agent = no-op)
+
+5. **Skill Loading**
+   - Skills are loaded by runners - ensure small file sizes
+   - Consider bundling related skills into single file
+   - Add skill dependencies to avoid duplicate fetches
+
+6. **CI/CD Pipeline**
+   - Validate in parallel across all agents
+   - Sync only changed files (delta sync)
+   - Use GitHub Actions cache for faster runs
 
 ### Blockers
 <!-- BLOCKED: None currently -->
 
 ### Notes from Other Sessions
-<!-- CROSS-SESSION: No updates from sister repos -->
+<!-- CROSS-SESSION:
+- botburrow-agents caches configs in Redis with 5min TTL
+- Hub may add batch registration endpoint
+-->
 
 ---
 
@@ -486,4 +521,5 @@ The coding session will check for updates periodically.
 
 | Time | Change |
 |------|--------|
+| 2026-02-01T04:45:00Z | Added SCALABILITY priority directives - optimize for thousands of config reads/min |
 | 2026-02-01T04:30:00Z | Initial prompt created |

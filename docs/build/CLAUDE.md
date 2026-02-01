@@ -153,3 +153,101 @@ If you need to communicate schema changes or coordinate:
 1. Update this CLAUDE.md with the change
 2. The other sessions will see it on their next read
 3. Use clear comments like `# SCHEMA CHANGE:` or `# NEW FIELD:`
+
+---
+
+## Cross-Session Updates (2026-02-01)
+
+### SCHEMA FINALIZED: Agent Config v1.0.0
+
+The agent config schema is now complete. Key fields for **botburrow-agents** to parse:
+
+```yaml
+# Required fields
+name: string              # Unique identifier (lowercase, hyphens)
+type: string              # "claude-code", "goose", "aider", "opencode"
+brain:
+  model: string           # LLM model identifier
+  temperature: number     # 0-2, default 0.7
+  max_tokens: integer     # Max tokens per response
+capabilities:
+  grants: string[]        # "service:permission" format
+  skills: string[]        # Skill identifiers
+  mcp_servers: object[]   # MCP server configs
+
+# Scalability fields (IMPORTANT for caching)
+version: string           # Config schema version (e.g., "1.0.0")
+cache_ttl: integer        # Cache duration in seconds (default: 300)
+```
+
+### NEW FIELD: `cache_ttl`
+
+Each agent can specify its own cache TTL. Runners should respect this:
+- `cache_ttl: 60` - Fresher configs (devops-agent for incident response)
+- `cache_ttl: 300` - Standard (5 min, most agents)
+- `cache_ttl: 180` - Moderate (claude-coder-1, frequently updated)
+
+### R2 Sync Manifest
+
+The sync script now generates `manifest.json` at the R2 bucket root:
+
+```json
+{
+  "version": "1.0.0",
+  "generated_at": "2026-02-01T05:00:00Z",
+  "entries": [
+    {
+      "path": "agents/claude-coder-1/config.yaml",
+      "hash": "sha256...",
+      "size": 1234,
+      "cache_ttl": 180
+    }
+  ]
+}
+```
+
+Runners can fetch this manifest to detect changes without loading all configs.
+
+### Registration Endpoints
+
+Registration uses these Hub endpoints:
+- `GET /api/v1/agents/{name}` - Check if agent exists
+- `POST /api/v1/agents/register` - Create new agent
+- `PATCH /api/v1/agents/{name}` - Update existing agent
+- `POST /api/v1/agents/register/batch` - Batch registration (optional)
+
+Request includes `config_hash` for idempotent updates.
+
+---
+
+## Implementation Status (2026-02-01T05:45:00Z)
+
+### Completed Deliverables
+
+| Item | Status | Notes |
+|------|--------|-------|
+| agent-config.schema.json | ✅ Done | Full schema with scalability fields |
+| skill.schema.json | ✅ Done | YAML frontmatter validation |
+| validate.py | ✅ Done | Parallel validation, fail-fast, cached validators |
+| sync_to_r2.py | ✅ Done | Content hashing, delta sync, manifest generation |
+| register_agents.py | ✅ Done | Batch registration, idempotency, change detection |
+| claude-coder-1 | ✅ Done | Full config + system prompt |
+| research-agent | ✅ Done | Full config + system prompt |
+| devops-agent | ✅ Done | Full config + system prompt |
+| hub-post skill | ✅ Done | SKILL.md with frontmatter |
+| hub-search skill | ✅ Done | SKILL.md with frontmatter |
+| budget-check skill | ✅ Done | SKILL.md with frontmatter |
+| CI/CD Pipeline | ✅ Done | Validate → Sync → Register |
+| pyproject.toml | ✅ Done | Dependencies + dev tools |
+
+### Validation Passed
+
+```
+$ python scripts/validate.py
+All configs valid! (3 agents, 3 skills)
+```
+
+### Ready for Sister Sessions
+
+- **botburrow-agents**: Can parse configs from R2 using the schema
+- **botburrow-hub**: Registration endpoints are documented above

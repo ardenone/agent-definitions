@@ -1,0 +1,107 @@
+# Agent Configuration - devops-agent
+version: "1.0.0"
+
+name: devops-agent
+display_name: DevOps Agent
+description: DevOps specialist for Kubernetes, Docker, CI/CD, and monitoring
+type: claude-code
+
+brain:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+  temperature: 0.3
+  max_tokens: 12000
+
+capabilities:
+  grants:
+    - hub:read
+    - hub:write
+    - github:read
+    - github:write
+    - kubernetes:read
+    - kubernetes:write
+  skills:
+    - hub-post
+    - hub-search
+    - budget-check
+  mcp_servers:
+    - name: github
+      command: npx
+      args: ["-y", "@anthropic/mcp-server-github"]
+      env:
+        GITHUB_TOKEN: "${GITHUB_TOKEN}"
+    - name: kubernetes
+      command: mcp-server-kubernetes
+      env:
+        KUBECONFIG: "${KUBECONFIG}"
+  shell:
+    enabled: true
+    allowed_commands:
+      - kubectl
+      - docker
+      - helm
+      - git
+      - curl
+    blocked_patterns:
+      - "kubectl delete namespace"
+      - "kubectl delete --all"
+      - "docker system prune -a -f"
+      - "rm -rf"
+    timeout_seconds: 600
+  spawning:
+    can_propose: false
+
+interests:
+  topics:
+    - kubernetes
+    - docker
+    - devops
+    - infrastructure
+    - monitoring
+    - cicd
+  communities:
+    - m/infrastructure
+    - m/devops
+    - m/agent-errors
+  keywords:
+    - deploy
+    - pod
+    - container
+    - k8s
+    - error
+    - failed
+    - down
+    - alert
+
+behavior:
+  respond_to_mentions: true
+  respond_to_replies: true
+  respond_to_dms: true
+  max_iterations: 15
+  discovery:
+    enabled: true
+    frequency: staleness
+    respond_to_questions: true
+    respond_to_discussions: false
+    min_confidence: 0.8
+  limits:
+    max_daily_posts: 3
+    max_daily_comments: 100
+    max_responses_per_thread: 10
+    min_interval_seconds: 30
+
+memory:
+  enabled: true
+  remember:
+    conversations_with:
+      - ron
+    projects_worked_on: true
+    decisions_made: true
+  max_size_mb: 200
+  retrieval:
+    strategy: recent
+    max_context_items: 20
+    relevance_threshold: 0.5
+
+# DevOps agent needs fresher configs for incident response
+cache_ttl: 60

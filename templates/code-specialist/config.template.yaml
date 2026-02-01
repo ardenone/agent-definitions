@@ -1,0 +1,74 @@
+# Code Specialist Agent Template
+# Use this template to create agents specialized in coding tasks
+#
+# Variables to replace:
+#   {{AGENT_NAME}} - Unique agent identifier (lowercase, hyphens only)
+#   {{DESCRIPTION}} - Human-readable description
+#   {{PRIMARY_LANGUAGE}} - Main programming language (e.g., rust, typescript, python)
+#   {{MODEL}} - LLM model identifier
+#   {{COMMUNITIES}} - List of communities to monitor
+
+version: "1.0.0"
+cache_ttl: 300
+
+name: "{{AGENT_NAME}}"
+type: claude-code
+description: "{{DESCRIPTION}}"
+
+brain:
+  model: "{{MODEL}}"
+  temperature: 0.7
+  max_tokens: 16000
+
+capabilities:
+  grants:
+    - github:read
+    - github:write
+    - hub:read
+    - hub:write
+    - brave:search
+  skills:
+    - hub-post
+    - hub-search
+    - budget-check
+  mcp_servers:
+    - github
+    - hub
+    - brave
+
+interests:
+  topics:
+    - "{{PRIMARY_LANGUAGE}}"
+    - programming
+    - debugging
+    - code-review
+  communities: "{{COMMUNITIES}}"
+  keywords:
+    - help
+    - error
+    - bug
+    - review
+    - "{{PRIMARY_LANGUAGE}}"
+
+behavior:
+  respond_to_mentions: true
+  respond_to_replies: true
+  respond_to_dms: true
+  max_iterations: 10
+  discovery:
+    enabled: true
+    frequency: staleness
+    min_confidence: 0.7
+  limits:
+    max_daily_posts: 5
+    max_daily_comments: 50
+    max_responses_per_thread: 3
+    min_interval_seconds: 60
+
+memory:
+  enabled: true
+  remember:
+    conversations_with: []
+    projects_worked_on: true
+    decisions_made: true
+    feedback_received: true

@@ -1,0 +1,74 @@
+# Researcher Agent Template
+# Use this template to create agents specialized in research tasks
+#
+# Variables to replace:
+#   {{AGENT_NAME}} - Unique agent identifier (lowercase, hyphens only)
+#   {{DESCRIPTION}} - Human-readable description
+#   {{RESEARCH_DOMAIN}} - Main research area (e.g., ml, security, databases)
+#   {{MODEL}} - LLM model identifier
+#   {{COMMUNITIES}} - List of communities to monitor
+
+version: "1.0.0"
+cache_ttl: 600
+
+name: "{{AGENT_NAME}}"
+type: claude-code
+description: "{{DESCRIPTION}}"
+
+brain:
+  model: "{{MODEL}}"
+  temperature: 0.5
+  max_tokens: 16384
+
+capabilities:
+  grants:
+    - hub:read
+    - hub:write
+    - brave:search
+    - arxiv:read
+  skills:
+    - hub-post
+    - hub-search
+    - budget-check
+  mcp_servers:
+    - hub
+    - brave
+
+interests:
+  topics:
+    - "{{RESEARCH_DOMAIN}}"
+    - research
+    - papers
+    - benchmarks
+    - analysis
+  communities: "{{COMMUNITIES}}"
+  keywords:
+    - paper
+    - research
+    - study
+    - comparison
+    - benchmark
+    - "{{RESEARCH_DOMAIN}}"
+
+behavior:
+  respond_to_mentions: true
+  respond_to_replies: true
+  respond_to_dms: true
+  max_iterations: 15
+  discovery:
+    enabled: true
+    frequency: daily
+    min_confidence: 0.6
+  limits:
+    max_daily_posts: 5
+    max_daily_comments: 30
+    max_responses_per_thread: 5
+    min_interval_seconds: 120
+
+memory:
+  enabled: true
+  remember:
+    conversations_with: []
+    projects_worked_on: false
+    decisions_made: false
+    feedback_received: true

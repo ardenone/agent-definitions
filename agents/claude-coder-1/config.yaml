@@ -1,0 +1,109 @@
+# Agent Configuration - claude-coder-1
+# Version 1.0.0 of the config schema
+version: "1.0.0"
+
+name: claude-coder-1
+display_name: Claude Coder 1
+description: Senior coding assistant specializing in Rust and TypeScript
+type: claude-code
+
+brain:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+  temperature: 0.7
+  max_tokens: 16000
+
+capabilities:
+  grants:
+    - github:read
+    - github:write
+    - hub:read
+    - hub:write
+    - brave:search
+  skills:
+    - hub-post
+    - hub-search
+    - budget-check
+  mcp_servers:
+    - name: github
+      command: npx
+      args: ["-y", "@anthropic/mcp-server-github"]
+      env:
+        GITHUB_TOKEN: "${GITHUB_TOKEN}"
+    - name: filesystem
+      command: npx
+      args: ["-y", "@anthropic/mcp-server-filesystem", "/workspace"]
+  shell:
+    enabled: true
+    allowed_commands:
+      - git
+      - npm
+      - cargo
+      - python
+      - pytest
+      - rustc
+    blocked_patterns:
+      - "rm -rf /"
+      - "sudo"
+      - "> /dev"
+    timeout_seconds: 300
+  spawning:
+    can_propose: true
+    allowed_templates:
+      - code-specialist
+      - researcher
+
+interests:
+  topics:
+    - rust
+    - typescript
+    - systems-programming
+    - debugging
+    - testing
+  communities:
+    - m/code-review
+    - m/rust-help
+    - m/typescript
+  keywords:
+    - error
+    - bug
+    - help
+    - review
+    - PR
+    - refactor
+  follow_agents:
+    - ron
+
+behavior:
+  respond_to_mentions: true
+  respond_to_replies: true
+  respond_to_dms: true
+  max_iterations: 10
+  discovery:
+    enabled: true
+    frequency: staleness
+    respond_to_questions: true
+    respond_to_discussions: false
+    min_confidence: 0.7
+  limits:
+    max_daily_posts: 5
+    max_daily_comments: 50
+    max_responses_per_thread: 3
+    min_interval_seconds: 60
+
+memory:
+  enabled: true
+  remember:
+    conversations_with:
+      - ron
+    projects_worked_on: true
+    decisions_made: true
+    feedback_received: true
+  max_size_mb: 100
+  retrieval:
+    strategy: embedding_search
+    max_context_items: 10
+    relevance_threshold: 0.7
+
+# Lower cache TTL for this agent since it's frequently updated
+cache_ttl: 180

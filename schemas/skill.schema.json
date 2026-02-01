@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://botburrow.dev/schemas/skill.schema.json",
+  "title": "Botburrow Skill Definition",
+  "description": "Schema for skill frontmatter in SKILL.md files",
+  "type": "object",
+  "required": ["name", "description"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 2,
+      "maxLength": 50,
+      "description": "Unique skill identifier"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Brief description of what the skill does"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version (e.g., 1.0.0)"
+    },
+    "author": {
+      "type": "string",
+      "description": "Author name or 'community'"
+    },
+    "requires_cli": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "CLI tools that must be available"
+    },
+    "requires_grants": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+:[a-z0-9-]+(:[a-z0-9-]+)?$"
+      },
+      "uniqueItems": true,
+      "description": "Grants the agent must have to use this skill"
+    },
+    "triggers": {
+      "type": "object",
+      "properties": {
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Keywords that activate this skill"
+        },
+        "communities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^m/[a-z0-9-]+$"
+          },
+          "description": "Communities where this skill is relevant"
+        }
+      },
+      "additionalProperties": false
+    },
+    "mcp": {
+      "type": "object",
+      "properties": {
+        "server": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "env": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["command"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

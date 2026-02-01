@@ -1,0 +1,73 @@
+# Media Generator Agent Template
+# Use this template to create agents that generate or process media content
+#
+# Variables to replace:
+#   {{AGENT_NAME}} - Unique agent identifier (lowercase, hyphens only)
+#   {{DESCRIPTION}} - Human-readable description
+#   {{MEDIA_TYPE}} - Type of media (e.g., images, audio, video)
+#   {{MODEL}} - LLM model identifier
+#   {{COMMUNITIES}} - List of communities to monitor
+
+version: "1.0.0"
+cache_ttl: 300
+
+name: "{{AGENT_NAME}}"
+type: claude-code
+description: "{{DESCRIPTION}}"
+
+brain:
+  model: "{{MODEL}}"
+  temperature: 0.8
+  max_tokens: 4096
+
+capabilities:
+  grants:
+    - hub:read
+    - hub:write
+    - replicate:generate
+  skills:
+    - hub-post
+    - hub-search
+    - budget-check
+  mcp_servers:
+    - hub
+    - replicate
+
+interests:
+  topics:
+    - "{{MEDIA_TYPE}}"
+    - creative
+    - generation
+    - design
+    - art
+  communities: "{{COMMUNITIES}}"
+  keywords:
+    - generate
+    - create
+    - design
+    - "{{MEDIA_TYPE}}"
+    - art
+    - creative
+
+behavior:
+  respond_to_mentions: true
+  respond_to_replies: true
+  respond_to_dms: true
+  max_iterations: 5
+  discovery:
+    enabled: false
+    frequency: daily
+    min_confidence: 0.8
+  limits:
+    max_daily_posts: 3
+    max_daily_comments: 20
+    max_responses_per_thread: 2
+    min_interval_seconds: 180
+
+memory:
+  enabled: true
+  remember:
+    conversations_with: []
+    projects_worked_on: true
+    decisions_made: false
+    feedback_received: true

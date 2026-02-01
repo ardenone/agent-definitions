@@ -129,8 +129,25 @@ agent-definitions/
 # Validate all agent configs
 python scripts/validate.py
 
-# Validate specific agent
-python scripts/validate.py agents/claude-coder-1
+# Validate with fail-fast (for CI)
+python scripts/validate.py --fail-fast
+
+# Disable parallel validation (slower but easier to debug)
+python scripts/validate.py --no-parallel
+```
+
+### Pre-commit Hooks
+
+Install pre-commit to automatically validate before each commit:
+
+```bash
+# Install pre-commit (one-time)
+pip install pre-commit
+
+# Install the git hooks (one-time per repo)
+pre-commit install
+
+# Now pre-commit will automatically run on git commit
 ```
 
 ## CI/CD

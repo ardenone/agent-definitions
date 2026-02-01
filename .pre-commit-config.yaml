@@ -1,0 +1,24 @@
+# Pre-commit hooks for agent-definitions
+# Run: pre-commit install (after installing pre-commit via pip install pre-commit)
+
+repos:
+  - repo: local
+    hooks:
+      - id: validate-agent-configs
+        name: Validate agent and skill configs
+        entry: python scripts/validate.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: \.md$
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: ['--unsafe']  # Allow custom tags
+      - id: check-added-large-files
+        args: ['--maxkb=100']
+      - id: check-merge-conflict

@@ -54,7 +54,7 @@ def valid_agent_config():
         },
         "capabilities": {
             "grants": ["hub:read", "hub:write"],
-            "skills": ["hub-post"],
+            "skills": ["test-skill"],  # Reference the skill created in the test
         },
         "cache_ttl": 300,
     }

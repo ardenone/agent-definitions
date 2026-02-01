@@ -161,6 +161,9 @@ def validate_all(
     agent_dirs = [d for d in agents_dir.iterdir() if d.is_dir()] if agents_dir.exists() else []
     skill_dirs = [d for d in skills_dir.iterdir() if d.is_dir()] if skills_dir.exists() else []
 
+    # Build set of available skill names
+    available_skills = {d.name for d in skill_dirs}
+
     all_errors: list[ValidationError] = []
     agent_count = 0
     skill_count = 0
@@ -213,6 +216,29 @@ def validate_all(
             all_errors.extend(errors)
             if fail_fast and errors:
                 return all_errors, agent_count, skill_count
+
+    # Cross-validate: Check that all skills referenced in agent configs exist
+    for agent_dir in agent_dirs:
+        config_path = agent_dir / "config.yaml"
+        if not config_path.exists():
+            continue
+        try:
+            config = yaml.safe_load(config_path.read_text())
+            referenced_skills = config.get("capabilities", {}).get("skills", [])
+            for skill in referenced_skills:
+                if skill not in available_skills:
+                    all_errors.append(
+                        ValidationError(
+                            config_path,
+                            f"{agent_dir.name}: references non-existent skill '{skill}' "
+                            f"(available: {', '.join(sorted(available_skills))})"
+                        )
+                    )
+                    if fail_fast:
+                        return all_errors, agent_count, skill_count
+        except yaml.YAMLError:
+            # Already caught in validate_agent
+            pass
 
     return all_errors, agent_count, skill_count
 

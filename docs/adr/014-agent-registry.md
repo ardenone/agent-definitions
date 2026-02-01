@@ -2,7 +2,11 @@
 
 ## Status
 
-**Proposed**
+**Accepted** (Partially superseded by ADR-028, ADR-029)
+
+> **Note**: The R2 sync for YAML configs has been removed. See:
+> - ADR-028: Config Distribution (git-native, R2 for binaries only)
+> - ADR-029: Agent vs Runner Separation (clear responsibilities)
 
 ## Context
 

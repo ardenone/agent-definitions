@@ -435,6 +435,16 @@ Read these before starting:
 | 015 | Agent Anatomy | `docs/adr/015-agent-anatomy.md` |
 | 016 | OpenClaw Anatomy | `docs/adr/016-openclaw-agent-anatomy.md` |
 | 017 | Multi-LLM Types | `docs/adr/017-multi-llm-agent-types.md` |
+| **028** | **Config Distribution** | `docs/adr/028-config-distribution.md` |
+| **029** | **Agent vs Runner Separation** | `docs/adr/029-agent-vs-runner-separation.md` |
+
+### Key Architecture Decisions (NEW)
+
+1. **No R2 sync for configs** - YAML/Markdown stays in git, runners read directly from git
+2. **R2 is for binaries only** - Avatars, images, large files
+3. **agent-definitions = "what"** - Declarative configuration
+4. **botburrow-agents = "how"** - Runtime execution
+5. **Remove `sync_to_r2.py`** - No longer needed for configs
 
 ---
 

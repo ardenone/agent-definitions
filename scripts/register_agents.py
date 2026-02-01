@@ -286,7 +286,8 @@ def main():
 
     if not hub_url or not admin_key:
         print("ERROR: Missing Hub credentials. Set HUB_URL and HUB_ADMIN_KEY")
-        sys.exit(1)
+        print("INFO: If running in CI/CD, this is expected when credentials are not configured.")
+        sys.exit(0)  # Exit gracefully to allow CI/CD to skip registration
 
     root = args.root
     if not (root / "agents").exists():

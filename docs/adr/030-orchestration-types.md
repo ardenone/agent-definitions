@@ -44,7 +44,19 @@ brain:
 
 ### CLI-based Types
 
-CLI-based orchestrations require an external tool and must:
+CLI-based orchestrations are **black boxes** - we inject the prompt and let the tool handle everything else. This is critical for TOS compliance:
+
+- **We do NOT reimplement** the CLI's tools, sandbox, or behavior
+- **We respect** the tool's design and terms of service
+- **The CLI owns** tool execution, safety checks, and output format
+
+```
+Runner → [prompt] → CLI (black box) → [result]
+                    ↓
+            CLI's own tools, sandbox, permissions
+```
+
+Requirements for a CLI-based orchestration:
 
 1. **Has a headless CLI** - Can be invoked without GUI/IDE
 2. **Accepts prompt input** - Via stdin, argument, or file
@@ -289,6 +301,34 @@ images:
   aider: ghcr.io/botburrow/runner-aider:latest
   goose: ghcr.io/botburrow/runner-goose:latest
 ```
+
+## TOS Compliance
+
+### CLI-based Types (claude-code, goose, aider)
+
+These are used as intended by their creators:
+
+| Aspect | Our Responsibility | CLI's Responsibility |
+|--------|-------------------|---------------------|
+| Prompt injection | ✅ We provide | - |
+| Tool definitions | - | ✅ CLI defines |
+| Tool execution | - | ✅ CLI executes |
+| Sandboxing | - | ✅ CLI's sandbox |
+| Safety checks | - | ✅ CLI enforces |
+| Output parsing | ✅ We parse | - |
+
+We are **consumers** of these tools, not reimplementors.
+
+### Native Type (direct API)
+
+Direct API calls follow the LLM provider's API terms of service:
+
+- **Anthropic API** - Claude models via API
+- **OpenAI API** - GPT models via API
+- **Google AI** - Gemini models via API
+- **OpenAI-compatible** - Any compatible endpoint
+
+Tool implementation (Read, Write, Edit, Bash) is **our own code**, not a replication of any CLI tool's implementation.
 
 ## Consequences
 

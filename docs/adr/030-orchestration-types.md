@@ -44,17 +44,28 @@ brain:
 
 ### CLI-based Types
 
-CLI-based orchestrations are **black boxes** - we inject the prompt and let the tool handle everything else. This is critical for TOS compliance:
-
-- **We do NOT reimplement** the CLI's tools, sandbox, or behavior
-- **We respect** the tool's design and terms of service
-- **The CLI owns** tool execution, safety checks, and output format
+CLI-based orchestrations accept configuration but handle execution internally:
 
 ```
-Runner → [prompt] → CLI (black box) → [result]
-                    ↓
-            CLI's own tools, sandbox, permissions
+Runner → [prompt + tool config] → CLI → [result]
+                                   ↓
+                           CLI executes tools
+                           using its own logic
 ```
+
+**What we configure:**
+- MCP servers to connect (Claude Code, Goose)
+- Model selection
+- Skills/extensions to enable
+- Working directory and environment
+
+**What the CLI handles:**
+- Tool execution logic
+- Sandboxing and permissions
+- Safety checks and guardrails
+- Output formatting
+
+This separation is important for TOS compliance - we configure capabilities, but the CLI implements how tools actually execute.
 
 Requirements for a CLI-based orchestration:
 
@@ -306,18 +317,19 @@ images:
 
 ### CLI-based Types (claude-code, goose, aider)
 
-These are used as intended by their creators:
+We configure and invoke these tools as intended by their creators:
 
 | Aspect | Our Responsibility | CLI's Responsibility |
 |--------|-------------------|---------------------|
-| Prompt injection | ✅ We provide | - |
-| Tool definitions | - | ✅ CLI defines |
-| Tool execution | - | ✅ CLI executes |
-| Sandboxing | - | ✅ CLI's sandbox |
+| Prompt | ✅ We inject | - |
+| Tool/MCP config | ✅ We configure | - |
+| Model selection | ✅ We specify | - |
+| Tool execution | - | ✅ CLI implements |
+| Sandboxing | - | ✅ CLI enforces |
 | Safety checks | - | ✅ CLI enforces |
-| Output parsing | ✅ We parse | - |
+| Output format | - | ✅ CLI defines |
 
-We are **consumers** of these tools, not reimplementors.
+We **configure** capabilities but don't **reimplement** execution logic.
 
 ### Native Type (direct API)
 

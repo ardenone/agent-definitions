@@ -1,7 +1,7 @@
 <!--
 _meta:
-  updated: 2026-02-01T04:45:00Z
-  version: 1.1.0
+  updated: 2026-02-01T14:30:00Z
+  version: 1.2.0
   status: active
 -->
 
@@ -505,6 +505,16 @@ The coding session will check for updates periodically.
    - Validate in parallel across all agents
    - Sync only changed files (delta sync)
    - Use GitHub Actions cache for faster runs
+
+### Git Workflow
+<!-- GIT: Commit and push after completing each major feature or file group -->
+
+**IMPORTANT**: Commit and push your work regularly!
+- After completing a new feature/component: `git add <files> && git commit && git push`
+- After fixing bugs or tests: commit and push
+- At minimum: commit every 15-20 minutes of active coding
+- Use descriptive commit messages
+- Do NOT commit: `.venv/`, `__pycache__/`, `.coverage`, `.marathon/`
 
 ### Blockers
 <!-- BLOCKED: None currently -->

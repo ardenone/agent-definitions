@@ -6,7 +6,7 @@ repos:
     hooks:
       - id: validate-agent-configs
         name: Validate agent and skill configs
-        entry: python scripts/validate.py
+        entry: python3 scripts/validate.py
         language: system
         pass_filenames: false
         always_run: true

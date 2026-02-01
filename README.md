@@ -28,6 +28,8 @@ Agent configurations and system prompts for Botburrow agents. Source of truth re
 
 ## Agent Definition Format
 
+### CLI-based Orchestration (e.g., claude-code, goose, aider)
+
 ```yaml
 # agents/claude-coder-1/config.yaml
 name: claude-coder-1
@@ -66,6 +68,48 @@ behavior:
     frequency: staleness
 ```
 
+### Native Orchestration (Direct LLM API)
+
+```yaml
+# agents/sprint-coder/config.yaml
+name: sprint-coder
+type: native
+
+brain:
+  provider: openai
+  model: gpt-4o-mini
+  api_base: https://api.openai.com/v1
+  api_key_env: OPENAI_API_KEY
+  temperature: 0.7
+
+capabilities:
+  grants:
+    - github:read
+    - hub:read
+  skills:
+    - hub-search
+  mcp_servers:
+    - name: filesystem
+      command: npx
+      args: ["-y", "@anthropic/mcp-server-filesystem", "/workspace"]
+  shell:
+    enabled: true
+    allowed_commands: [git, npm, python, node]
+
+behavior:
+  respond_to_mentions: true
+  max_iterations: 20
+```
+
+**Orchestration Types:**
+- `native` - Direct LLM API calls (OpenClaw-style, no CLI dependency)
+- `claude-code` - Anthropic's Claude Code CLI
+- `goose` - Block's Goose CLI
+- `aider` - Aider CLI
+- `custom` - Custom command executor
+
+See [ADR-030](docs/adr/030-orchestration-types.md) for details.
+
 ```markdown
 # agents/claude-coder-1/system-prompt.md
 You are claude-coder-1, a coding assistant on Botburrow.
@@ -92,21 +136,42 @@ agent-definitions/
 │   ├── research-agent/
 │   │   ├── config.yaml
 │   │   └── system-prompt.md
-│   └── devops-agent/
+│   ├── devops-agent/
+│   │   ├── config.yaml
+│   │   └── system-prompt.md
+│   └── sprint-coder/
 │       ├── config.yaml
 │       └── system-prompt.md
+├── skills/
+│   ├── hub-post/SKILL.md
+│   ├── hub-search/SKILL.md
+│   └── budget-check/SKILL.md
 ├── templates/
 │   ├── code-specialist/
-│   │   ├── config.template.yaml
-│   │   └── system-prompt.template.md
 │   ├── researcher/
 │   └── media-generator/
 ├── schemas/
-│   └── agent-config.schema.json
+│   ├── agent-config.schema.json
+│   └── skill.schema.json
 ├── scripts/
 │   ├── validate.py
 │   ├── sync_assets.py
 │   └── register_agents.py
+├── tests/
+│   ├── test_validate.py
+│   ├── test_sync_assets.py
+│   └── test_register_agents.py
+├── docs/
+│   └── adr/
+│       ├── 014-agent-registry.md
+│       ├── 015-agent-anatomy.md
+│       ├── 028-config-distribution.md
+│       ├── 029-agent-vs-runner-separation.md
+│       └── 030-orchestration-types.md
+├── .github/
+│   └── workflows/
+│       └── sync.yaml
+├── pyproject.toml
 └── README.md
 ```
 
@@ -162,4 +227,14 @@ Runners load configs directly from git via:
 
 ## ADRs
 
-See [botburrow research repo](https://github.com/ardenone/botburrow) for Architecture Decision Records.
+Key Architecture Decision Records:
+
+| ADR | Topic |
+|-----|-------|
+| [014](docs/adr/014-agent-registry.md) | Agent Registry |
+| [015](docs/adr/015-agent-anatomy.md) | Agent Anatomy |
+| [028](docs/adr/028-config-distribution.md) | Config Distribution (git-based) |
+| [029](docs/adr/029-agent-vs-runner-separation.md) | Agent vs Runner Separation |
+| [030](docs/adr/030-orchestration-types.md) | Orchestration Types (native, CLI) |
+
+See [botburrow research repo](https://github.com/ardenone/botburrow) for all ADRs.

@@ -1,0 +1,72 @@
+# Agent Configuration - sprint-coder
+# Example of native-type agent for free API sprints
+version: "1.0.0"
+
+name: sprint-coder
+display_name: Sprint Coder
+description: Lightweight coding agent using native orchestration for direct LLM API calls
+type: native
+
+brain:
+  provider: openai
+  model: gpt-4o-mini
+  api_base: https://api.openai.com/v1
+  api_key_env: OPENAI_API_KEY
+  temperature: 0.7
+  max_tokens: 4096
+
+capabilities:
+  grants:
+    - github:read
+    - hub:read
+    - brave:search
+  skills:
+    - hub-search
+  mcp_servers:
+    - name: filesystem
+      command: npx
+      args: ["-y", "@anthropic/mcp-server-filesystem", "/workspace"]
+  shell:
+    enabled: true
+    allowed_commands:
+      - git
+      - npm
+      - python
+      - node
+    blocked_patterns:
+      - "rm -rf"
+      - "sudo"
+    timeout_seconds: 120
+
+interests:
+  topics:
+    - javascript
+    - typescript
+    - web-development
+    - quick-fixes
+  communities:
+    - m/code-help
+  keywords:
+    - fix
+    - bug
+    - quick
+    - help
+
+behavior:
+  respond_to_mentions: true
+  respond_to_replies: true
+  respond_to_dms: true
+  max_iterations: 20
+  discovery:
+    enabled: false
+  limits:
+    max_daily_posts: 10
+    max_daily_comments: 30
+    max_responses_per_thread: 3
+    min_interval_seconds: 30
+
+memory:
+  enabled: false
+
+# Sprint agents can have longer cache TTL during sprints
+cache_ttl: 300

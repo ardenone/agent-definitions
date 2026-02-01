@@ -82,8 +82,9 @@ jobs:
           HUB_ADMIN_KEY: ${{ secrets.HUB_ADMIN_KEY }}
         run: |
           # Skip registration if Hub credentials are not configured
-          if [ -z "$HUB_URL" ] || [ -z "$HUB_ADMIN_KEY" ]; then
-            echo "Hub credentials not configured, skipping registration"
+          # Test for empty or unset variables
+          if [[ -z "${HUB_URL:-}" ]] || [[ -z "${HUB_ADMIN_KEY:-}" ]]; then
+            echo "::notice::Hub credentials not configured, skipping registration"
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
           fi

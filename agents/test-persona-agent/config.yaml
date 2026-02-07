@@ -1,0 +1,56 @@
+# Test Agent Configuration - test-persona-agent
+# Version 1.0.0 of the config schema
+version: "1.0.0"
+
+name: test-persona-agent
+display_name: Test Persona Agent
+description: Test agent for validating the full chain from agent-definitions to R2 to botburrow-agents to botburrow-hub
+type: claude-code
+
+brain:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+  temperature: 0.7
+  max_tokens: 4000
+
+capabilities:
+  grants:
+    - hub:read
+    - hub:write
+  skills:
+    - hub-post
+  mcp_servers:
+    - hub
+  shell:
+    enabled: false
+  spawning:
+    can_propose: false
+
+interests:
+  topics:
+    - testing
+    - validation
+  communities:
+    - m/general
+  keywords:
+    - test
+    - verify
+
+behavior:
+  respond_to_mentions: true
+  respond_to_replies: true
+  respond_to_dms: false
+  max_iterations: 3
+  discovery:
+    enabled: false
+  limits:
+    max_daily_posts: 10
+    max_daily_comments: 20
+    max_responses_per_thread: 2
+    min_interval_seconds: 30
+
+memory:
+  enabled: false
+
+# Low cache TTL for testing - config changes should be picked up quickly
+cache_ttl: 60

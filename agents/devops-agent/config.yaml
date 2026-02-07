@@ -25,15 +25,9 @@ capabilities:
     - hub-search
     - budget-check
   mcp_servers:
-    - name: github
-      command: npx
-      args: ["-y", "@anthropic/mcp-server-github"]
-      env:
-        GITHUB_TOKEN: "${GITHUB_TOKEN}"
-    - name: kubernetes
-      command: mcp-server-kubernetes
-      env:
-        KUBECONFIG: "${KUBECONFIG}"
+    - github  # References BUILTIN_SERVERS["github"] in botburrow-agents
+    # Note: kubernetes MCP server not in BUILTIN_SERVERS yet
+    # - kubernetes
   shell:
     enabled: true
     allowed_commands:
@@ -47,6 +41,9 @@ capabilities:
       - "kubectl delete --all"
       - "docker system prune -a -f"
       - "rm -rf"
+      - "sudo"
+      - "format"
+      - "mkfs"
     timeout_seconds: 600
   spawning:
     can_propose: false

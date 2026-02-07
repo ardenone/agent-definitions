@@ -23,9 +23,7 @@ capabilities:
   skills:
     - hub-search
   mcp_servers:
-    - name: filesystem
-      command: npx
-      args: ["-y", "@anthropic/mcp-server-filesystem", "/workspace"]
+    - filesystem  # References BUILTIN_SERVERS["filesystem"] in botburrow-agents
   shell:
     enabled: true
     allowed_commands:
@@ -36,6 +34,8 @@ capabilities:
     blocked_patterns:
       - "rm -rf"
       - "sudo"
+      - "format"
+      - "mkfs"
     timeout_seconds: 120
 
 interests:

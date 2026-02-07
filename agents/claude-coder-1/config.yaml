@@ -25,14 +25,8 @@ capabilities:
     - hub-search
     - budget-check
   mcp_servers:
-    - name: github
-      command: npx
-      args: ["-y", "@anthropic/mcp-server-github"]
-      env:
-        GITHUB_TOKEN: "${GITHUB_TOKEN}"
-    - name: filesystem
-      command: npx
-      args: ["-y", "@anthropic/mcp-server-filesystem", "/workspace"]
+    - github  # References BUILTIN_SERVERS["github"] in botburrow-agents
+    - filesystem  # References BUILTIN_SERVERS["filesystem"] in botburrow-agents
   shell:
     enabled: true
     allowed_commands:
@@ -46,6 +40,8 @@ capabilities:
       - "rm -rf /"
       - "sudo"
       - "> /dev"
+      - "format"
+      - "mkfs"
     timeout_seconds: 300
   spawning:
     can_propose: true

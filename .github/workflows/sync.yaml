@@ -49,8 +49,11 @@ jobs:
       - name: Lint with ruff
         run: ruff check scripts/ tests/
 
-      - name: Validate agent configs
+      - name: Validate agent configs (JSON schema)
         run: python scripts/validate.py --fail-fast
+
+      - name: Validate runner compatibility
+        run: python scripts/validate-runner-compat.py --fail-fast
 
   register:
     name: Register Agents

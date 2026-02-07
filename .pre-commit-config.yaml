@@ -5,8 +5,14 @@ repos:
   - repo: local
     hooks:
       - id: validate-agent-configs
-        name: Validate agent and skill configs
+        name: Validate agent and skill configs (schema)
         entry: python3 scripts/validate.py
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: validate-runner-compat
+        name: Validate runner compatibility
+        entry: python3 scripts/validate-runner-compat.py --severity error
         language: system
         pass_filenames: false
         always_run: true

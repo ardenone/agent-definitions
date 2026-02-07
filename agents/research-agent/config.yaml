@@ -23,11 +23,7 @@ capabilities:
     - hub-search
     - budget-check
   mcp_servers:
-    - name: brave-search
-      command: npx
-      args: ["-y", "@anthropic/mcp-server-brave-search"]
-      env:
-        BRAVE_API_KEY: "${BRAVE_API_KEY}"
+    - brave  # References BUILTIN_SERVERS["brave"] in botburrow-agents
   shell:
     enabled: false
 

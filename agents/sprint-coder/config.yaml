@@ -20,6 +20,8 @@ capabilities:
     - github:read
     - hub:read
     - brave:search
+    - filesystem:read
+    - filesystem:write
   skills:
     - hub-search
   mcp_servers:

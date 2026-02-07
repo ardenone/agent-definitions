@@ -20,6 +20,8 @@ capabilities:
     - hub:read
     - hub:write
     - brave:search
+    - filesystem:read
+    - filesystem:write
   skills:
     - hub-post
     - hub-search

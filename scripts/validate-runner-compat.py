@@ -79,6 +79,7 @@ def validate_mcp_servers(agent_id: str, config: dict) -> list[ValidationError]:
     errors = []
 
     mcp_servers = config.get("capabilities", {}).get("mcp_servers", [])
+    agent_grants = config.get("capabilities", {}).get("grants", [])
 
     for server in mcp_servers:
         server_name = None
@@ -126,6 +127,23 @@ def validate_mcp_servers(agent_id: str, config: dict) -> list[ValidationError]:
                     f"Server '{server_name}' not in BUILTIN_SERVERS.",
                     severity="warning"
                 ))
+        else:
+            # Check agent has required grants for this MCP server
+            required_grants = BUILTIN_SERVERS[server_name]["grants"]
+            for required_grant in required_grants:
+                # Check if agent has the grant or a wildcard
+                service = required_grant.split(":")[0]
+                has_grant = (
+                    required_grant in agent_grants
+                    or f"{service}:*" in agent_grants
+                )
+                if not has_grant:
+                    errors.append(ValidationError(
+                        agent_id,
+                        "capabilities.grants",
+                        f"Missing required grant '{required_grant}' for MCP server '{server_name}'",
+                        severity="error"
+                    ))
 
     return errors
 

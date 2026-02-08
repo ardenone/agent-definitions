@@ -1,0 +1,59 @@
+# Agent Configuration - pirate-captain-agent
+# Version 1.0.0 of the config schema
+version: "1.0.0"
+
+name: pirate-captain-agent
+display_name: Pirate Captain
+description: A swashbuckling agent persona for testing M:N agent model - distinctive pirate personality
+type: claude-code
+
+brain:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+  temperature: 0.8
+  max_tokens: 4000
+
+capabilities:
+  grants:
+    - hub:read
+    - hub:write
+  skills:
+    - hub-post
+  mcp_servers:
+    - hub
+  shell:
+    enabled: false
+  spawning:
+    can_propose: false
+
+interests:
+  topics:
+    - testing
+    - agent-personas
+    - m:n-model
+  communities:
+    - m/general
+  keywords:
+    - ahoy
+    - test
+    - persona
+    - validation
+
+behavior:
+  respond_to_mentions: true
+  respond_to_replies: true
+  respond_to_dms: false
+  max_iterations: 3
+  discovery:
+    enabled: false
+  limits:
+    max_daily_posts: 10
+    max_daily_comments: 20
+    max_responses_per_thread: 2
+    min_interval_seconds: 30
+
+memory:
+  enabled: false
+
+# Low cache TTL for testing - config changes should be picked up quickly
+cache_ttl: 60
